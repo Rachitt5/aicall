@@ -1,0 +1,118 @@
+Missed-Call Trigger System (MacroDroid + Android Phone + VAPI + Twilio)
+
+This approach is actually very smart for low-cost deployments in India because:
+
+User gives a missed call
+Android phone detects incoming call using MacroDroid
+Phone automatically disconnects
+Your automation server triggers VAPI outbound AI call
+Twilio/VAPI calls customer back
+
+This removes:
+
+Web form dependency
+Manual lead entry
+Expensive inbound IVR setup
+Complex frontend/backend for basic triggering
+
+It becomes a “Missed Call AI Callback System.”
+
+High-Level Architecture
+┌──────────────────────────────────────────────────────────────┐
+│                 MISSED CALL AI CALLBACK SYSTEM              │
+└──────────────────────────────────────────────────────────────┘
+
+        CUSTOMER
+            │
+            │ 1. Gives missed call
+            ▼
+    ┌─────────────────┐
+    │ Android Phone   │
+    │ (SIM Installed) │
+    │ MacroDroid App  │
+    └─────────────────┘
+            │
+            │ 2. Detect incoming number
+            │ 3. Auto reject call
+            ▼
+    ┌──────────────────────────┐
+    │ Local Trigger Server     │
+    │ Node.js / Flask          │
+    │ Running on same phone    │
+    │ or local PC/VPS          │
+    └──────────────────────────┘
+            │
+            │ 4. Send webhook
+            ▼
+    ┌──────────────────────────┐
+    │ Make.com Workflow        │
+    │ Automation Layer         │
+    └──────────────────────────┘
+            │
+            ├──────────────┐
+            │              │
+            ▼              ▼
+    ┌────────────┐   ┌──────────────┐
+    │ Supabase   │   │ VAPI AI      │
+    │ Database   │   │ Assistant    │
+    └────────────┘   └──────────────┘
+                            │
+                            ▼
+                     ┌──────────────┐
+                     │ Twilio       │
+                     │ Outbound Call│
+                     └──────────────┘
+                            │
+                            ▼
+                      CUSTOMER GETS
+                         AI CALL
+Core Concept
+Flow
+Step 1 — User Gives Missed Call
+
+Customer calls your number:
+
++91 98XXXXXX12
+
+Phone rings for 1–2 seconds.
+
+Step 2 — MacroDroid Detects Call
+
+MacroDroid automation:
+
+Trigger:
+Incoming Call
+
+Actions:
+1. Capture caller number
+2. Reject call
+3. Send HTTP request to local server
+Step 3 — Local Server Receives Number
+
+Example payload:
+
+{
+  "phone": "+919876543210",
+  "timestamp": "2026-03-22T10:00:00Z"
+}
+Step 4 — Server Triggers Make.com
+
+Node.js server sends webhook:
+
+POST → Make.com webhook
+Step 5 — Make.com Starts Workflow
+
+Workflow:
+
+Webhook
+   ↓
+Check duplicate calls
+   ↓
+Store in Supabase
+   ↓
+Format VAPI payload
+   ↓
+HTTP request to VAPI
+Step 6 — VAPI Calls Back
+
+Twilio places outbound AI call:
